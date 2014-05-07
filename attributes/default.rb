@@ -1,7 +1,6 @@
-default['tomcat-component']['timezone']="UTC"
-default['tomcat-component']['lib_uri'] = ""
-default['tomcat-component']['create_context'] = true
-default['tomcat-component']['war']['uri'] = ""
-default['tomcat-component']['war']['appname'] = ""
-default['tomcat-component']['context'] = nil
+default['cookbook-qubell-tomcat']['timezone']="UTC"
+default['cookbook-qubell-tomcat']['lib_uri'] = ""
+default['cookbook-qubell-tomcat']['war']['uri'] = ""
+default['cookbook-qubell-tomcat']['war']['path'] = ""
+default['cookbook-qubell-tomcat']['context'] = nil
 

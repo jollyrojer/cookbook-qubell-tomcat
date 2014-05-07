@@ -22,7 +22,7 @@ directory "/etc/profile.d" do
 end
 
 file "/etc/profile.d/tz.sh" do
-  content "export TZ=#{node['tomcat-component']['timezone']}"
+  content "export TZ=#{node['cookbook-qubell-tomcat']['timezone']}"
   mode 00755
 end
 

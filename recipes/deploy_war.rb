@@ -5,28 +5,37 @@
 service "tomcat" do
   service_name "tomcat#{node["tomcat"]["base_version"]}"
   supports :restart => false, :status => true
-  action :nothing
+  action :stop
 end
 
 #download war file
 require 'uri'
+destname = "#{node['cookbook-qubell-tomcat']['war']['path'][/^\/?(.*)/,1].strip}"
 
-if ( node['tomcat-component']['war']['uri'].start_with?('http', 'ftp') )
-  uri = URI.parse(node['tomcat-component']['war']['uri'])
-  file_name = node['tomcat-component']['war']['appname']
+if destname.include?("/")
+  fail "war.path  must not contain /"
+end
+if destname.empty? 
+  file_name = "ROOT.war"
+else
+  file_name = "#{destname}.war"
+end
+
+
+if ( node['cookbook-qubell-tomcat']['war']['uri'].start_with?('http', 'ftp') )
+  uri = URI.parse(node['cookbook-qubell-tomcat']['war']['uri'])
   ext_name = File.extname(file_name)
   app_name = file_name[0...-4]
   
   remote_file "/tmp/#{file_name}" do
-    source node['tomcat-component']['war']['uri']
+    source node['cookbook-qubell-tomcat']['war']['uri']
   end
   
   file_path = "/tmp/#{file_name}"
   
-elsif ( node['tomcat-component']['war']['uri'].start_with?('file') )
-  url = node['tomcat-component']['war']['uri']
+elsif ( node['cookbook-qubell-tomcat']['war']['uri'].start_with?('file') )
+  url = node['cookbook-qubell-tomcat']['war']['uri']
   file_path = URI.parse(url).path
-  file_name = node['tomcat-component']['war']['appname']
   ext_name =  File.extname(file_name)
   app_name = File.basename(file_name)[0...-4]
 end
@@ -60,17 +69,40 @@ bash "copy #{file_path} to tomcat" do
 end
 
 #create context file
-case node['tomcat-component']['create_context']
-  when true
+if (! node['cookbook-qubell-tomcat']['context'].nil? and node["cookbook-qubell-tomcat"]["context"].to_hash.fetch("context_attrs", {}) != {} )
     template "#{node['tomcat']['context_dir']}/#{app_name}.xml" do
       owner node["tomcat"]["user"]
       group node["tomcat"]["group"]
       source "context.xml.erb"
       variables({
-      :context_attrs => node["tomcat-component"]["context"].to_hash.fetch("context_attrs", {}),
-      :context_nodes => node["tomcat-component"]["context"].to_hash.fetch("context_nodes", [])
-    })
-    notifies :restart, "service[tomcat]", :delayed
+      :context_attrs => node["cookbook-qubell-tomcat"]["context"].to_hash.fetch("context_attrs", {}),
+      :context_nodes => node["cookbook-qubell-tomcat"]["context"].to_hash.fetch("context_nodes", [])
+    }) 
   end
+end
+
+service "tomcat" do
+  service_name "tomcat#{node["tomcat"]["base_version"]}"
+  supports :restart => false, :status => true
+  action :start
+end
+
+bash "Waiting application start" do
+  user "root"
+  code <<-EOH
+    i=0
+    while [ $i -le 77 -a "`curl -s -w "%{http_code}" "http://localhost:8080/#{destname}" -o /dev/null`" == "000" ]; do
+        echo "$i"
+        sleep 10
+        ((i++))
+      done
+    if [ "`curl -s -w "%{http_code}" "http://localhost:8080/#{destname}" -o /dev/null`" == "200" ]; then
+        exit 0
+    elif [ "`curl -s -w "%{http_code}" "http://localhost:8080/#{destname}" -o /dev/null`" == "302" ]; then
+        exit 0
+    else
+        exit 1
+    fi
+    EOH
 end
 
