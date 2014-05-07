@@ -9,7 +9,7 @@ service "tomcat" do
 end
 
 require 'uri'
-lib_uri = node['tomcat-component']['lib_uri']
+lib_uri = node['cookbook-qubell-tomcat']['lib_uri']
 lib_uri.each do |lib|
   uri = URI.parse(lib)
   file_name = File.basename(uri.path)

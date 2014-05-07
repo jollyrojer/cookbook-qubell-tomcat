@@ -10,4 +10,5 @@ cookbook 'openssl', git: "https://github.com/opscode-cookbooks/openssl.git", ref
 cookbook 'apt', git: "https://github.com/opscode-cookbooks/apt.git", ref: "0d028c2aa88627774c9bf15e55eab498b939101d"
 cookbook 'java', git: "https://github.com/opscode-cookbooks/java.git", ref: "7b559d6509c32cb250571250a2484dba2a9d5e49"
 cookbook "minitest-handler"
-cookbook "tomcat_component_test", path: "./test/cookbooks/tomcat_component_test"
+cookbook "cookbook-qubell-tomcat_test", path: "./test/cookbooks/cookbook-qubell-tomcat_test"
+

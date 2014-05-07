@@ -1,4 +1,4 @@
-name "tomcat-component"
+name "cookbook-qubell-tomcat"
 version "0.2.0"
 
 depends "apt", "2.2.0"
