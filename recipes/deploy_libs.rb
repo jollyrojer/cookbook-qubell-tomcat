@@ -39,6 +39,7 @@ lib_uri.each do |lib|
   case ext_name
   when ".gz"
     bash "extract #{target_file}" do
+      not_if { ::File.exists?("#{node['tomcat']['lib_dir']}/#{file_name}")}
       user "root"
       code <<-EOH
       tar -xzvf #{target_file} -C #{node['tomcat']['lib_dir']}/
@@ -51,6 +52,7 @@ lib_uri.each do |lib|
       action :install
     end
     bash "extract #{target_file}" do
+      not_if { ::File.exists?("#{node['tomcat']['lib_dir']}/#{file_name}")}
       user "root"
       code <<-EOH
       unzip -o #{target_file} -d #{node['tomcat']['lib_dir']}/
@@ -61,6 +63,7 @@ lib_uri.each do |lib|
   #copy lib to tomcat libs
   when ".jar"
     bash "copy #{target_file}" do
+      not_if { ::File.exists?("#{node['tomcat']['lib_dir']}/#{file_name}")}
       user "root"
       code <<-EOH
       cp -rf #{target_file} #{node['tomcat']['lib_dir']}/

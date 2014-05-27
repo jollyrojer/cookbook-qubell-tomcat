@@ -1,4 +1,4 @@
-[![Build Status](https://travis-ci.org/jollyrojer/tomcat-component.png?branch=master)](https://travis-ci.org/jollyrojer/tomcat-component)
+[![Build Status](https://travis-ci.org/qubell-bazaar/cookbook-qubell-tomcat.png?branch=master)](https://travis-ci.org/qubell-bazaar/cookbook-qubell-tomcat)
 
 Tomcat Cookbook
 ==============

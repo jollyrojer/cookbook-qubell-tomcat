@@ -27,18 +27,18 @@ suites:
   - name: default
     run_list:
       - recipe[minitest-handler]
-      - recipe[tomcat_component_test::default]
+      - recipe[cookbook-qubell-tomcat_test::default]
     attributes:
   - name: deploy_libs
     run_list:
       - recipe[minitest-handler]
-      - recipe[tomcat_component_test::deploy_libs]
-    attributes: {"tomcat-component": {"lib_uri": ["http://repo1.maven.org/maven2/log4j/log4j/1.2.17/log4j-1.2.17.jar"]}}
+      - recipe[cookbook-qubell-tomcat_test::deploy_libs]
+    attributes: {"cookbook-qubell-tomcat": {"lib_uri": ["http://repo1.maven.org/maven2/log4j/log4j/1.2.17/log4j-1.2.17.jar"]}} 
   - name: deploy_war_with_context
     run_list:
       - recipe[minitest-handler]
-      - recipe[tomcat_component_test::deploy_war]
-    attributes: {"tomcat-component": 
+      - recipe[cookbook-qubell-tomcat_test::deploy_war]
+    attributes: {"cookbook-qubell-tomcat": 
                   {"create_context": true,
                    "war":
                      {"uri": "https://dl.dropboxusercontent.com/u/957640/deploytest/petclinic.war",
