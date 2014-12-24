@@ -39,10 +39,9 @@ suites:
       - recipe[minitest-handler]
       - recipe[cookbook-qubell-tomcat_test::deploy_war]
     attributes: {"cookbook-qubell-tomcat": 
-                  {"create_context": true,
-                   "war":
-                     {"uri": "https://dl.dropboxusercontent.com/u/957640/deploytest/petclinic.war",
-                      "path": "petclinic"
+                  {"war":
+                     {"uri": ["https://dl.dropboxusercontent.com/u/957640/deploytest/petclinic.war"],
+                      "path": ["petclinic"]
                      }, 
                    "context":
                      {"context_attrs": 
