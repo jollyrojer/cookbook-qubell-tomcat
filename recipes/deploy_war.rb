@@ -10,11 +10,11 @@ end
 
 #download war file
 require 'uri'
-node['cookbook-qubell-tomcat']['war']['uri'].each_with_index do |uri_index, uri|
-  node['cookbook-qubell-tomcat']['war']['path'].each_with_index do |path_index, path|
-    if ( uri_index == path_index)
-      destname = "#{path[/^\/?(.*)/,1].strip}"
-
+node['cookbook-qubell-tomcat']['war']['uri'].each_with_index do |uri, uri_index|
+  node['cookbook-qubell-tomcat']['war']['path'].each_with_index do |path, path_index|
+    if ( "#{uri_index}" == "#{path_index}" )
+            destname = "#{path[/^\/?(.*)/,1].strip}"
+ 
       if destname.include?("/")
         fail "war.path  must not contain /"
       end
@@ -26,13 +26,12 @@ node['cookbook-qubell-tomcat']['war']['uri'].each_with_index do |uri_index, uri|
 
 
       if ( uri.start_with?('http', 'ftp') )
-        uri = URI.parse(uri)
         ext_name = File.extname(file_name)
         app_name = file_name[0...-4]
         
         remote_file "/tmp/#{file_name}" do
           source uri
-      end
+        end
         
         file_path = "/tmp/#{file_name}"
         
