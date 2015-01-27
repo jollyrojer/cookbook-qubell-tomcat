@@ -1,18 +1,15 @@
 #
 #Recipe will deploy war to tomcat
 #
-
-service "tomcat" do
-  service_name "tomcat#{node["tomcat"]["base_version"]}"
-  supports :restart => false, :status => true
-  action :stop
-end
-
 #download war file
 require 'uri'
 node['cookbook-qubell-tomcat']['war']['uri'].each_with_index do |uri, uri_index|
-  node['cookbook-qubell-tomcat']['war']['path'].each_with_index do |path, path_index|
-    if ( "#{uri_index}" == "#{path_index}" )
+  service "tomcat" do
+    service_name "tomcat#{node["tomcat"]["base_version"]}"
+    supports :restart => false, :status => true
+    action :stop
+  end
+  path = node['cookbook-qubell-tomcat']['war']['path'][uri_index] 
             destname = "#{path[/^\/?(.*)/,1].strip}"
  
       if destname.include?("/")
@@ -93,20 +90,18 @@ node['cookbook-qubell-tomcat']['war']['uri'].each_with_index do |uri, uri_index|
         user "root"
         code <<-EOH
           i=0
-          while [ $i -le 77 -a "`curl -s -w "%{http_code}" "http://localhost:8080/#{destname}" -o /dev/null`" == "000" ]; do
-              echo "$i"
-              sleep 10
-              ((i++))
-            done
-          if [ "`curl -s -w "%{http_code}" "http://localhost:8080/#{destname}" -o /dev/null`" == "200" ]; then
-              exit 0
-          elif [ "`curl -s -w "%{http_code}" "http://localhost:8080/#{destname}" -o /dev/null`" == "302" ]; then
-              exit 0
-          else
-              exit 1
-          fi
+          http=000
+          while [ $i -le 77 -a "$http" == "000" ]; do
+            echo "$i"
+            sleep 10
+            ((i++))
+            http=`curl -s -w "%{http_code}" "http://localhost:8080/#{destname}" -o /dev/null`
+          done
+
+          echo "http: $http"
+
+          [ "$http" ~= "^[045]" ] && exit 1
+          exit 0
           EOH
-      end
-    end        
   end
 end    
