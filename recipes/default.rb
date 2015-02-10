@@ -15,6 +15,7 @@ case node['platform']
     end
   end
 
+node.set['tomcat']['java_options'] = "#{node['tomcat']['java_options']} " + "#{node['cookbook-qubell-tomcat']['add_java_options'].join(' ')}"
 include_recipe "timezone-ii"
 
 directory "/etc/profile.d" do
