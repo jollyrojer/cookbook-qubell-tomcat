@@ -3,6 +3,11 @@
 #
 #download war file
 require 'uri'
+service "tomcat" do
+    service_name "tomcat#{node["tomcat"]["base_version"]}"
+    supports :restart => false, :status => true
+    action :stop
+end
 node['cookbook-qubell-tomcat']['war']['uri'].each_with_index do |uri, uri_index|
   path = node['cookbook-qubell-tomcat']['war']['path'][uri_index] 
   destname = "#{path[/^\/?(.*)/,1].strip}"
@@ -41,27 +46,23 @@ node['cookbook-qubell-tomcat']['war']['uri'].each_with_index do |uri, uri_index|
   directory "/tmp/checksum/" do
     action :create
   end
-  file_md5 = "/tmp/checksum/#{app_name}.md5"
-  bash "check war md5" do
+  file_md5 = "/tmp/checksum/#{file_name}.md5"
+  Chef::Log.info("MD5 for file: #{file_md5}") 
+  bash "check war md5 for #{file_path}" do
     user "root"
     code <<-EOH
-      md5sum -b #{file_path} > #{file_md5}
+      echo "md5 UPDATE start"
+      md5sum -b #{file_path} > #{file_md5} 
+      echo "md5 UPDATE finished"
     EOH
     not_if "md5sum -c #{file_md5}"
-    notifies :stop,    "service[tomcat]", :immediately
     notifies :delete, "file[#{node['tomcat']['webapp_dir']}/#{file_name}]", :immediately 
     notifies :delete, "file[#{node['tomcat']['context_dir']}/#{app_name}.xml]", :immediately
     notifies :delete, "directory[#{node['tomcat']['webapp_dir']}/#{app_name}]", :immediately
     notifies :run,    "bash[copy #{file_path} to tomcat]", :immediately
     notifies :create, "template[#{node['tomcat']['context_dir']}/#{app_name}.xml]", :immediately
-    notifies :start,    "service[tomcat]", :immediately
   end
 
-  service "tomcat" do
-    service_name "tomcat#{node["tomcat"]["base_version"]}"
-    supports :restart => false, :status => true
-    action :nothing
-  end
 
   #cleanup tomcat before deploy
   file "#{node['tomcat']['webapp_dir']}/#{file_name}" do
@@ -103,23 +104,22 @@ node['cookbook-qubell-tomcat']['war']['uri'].each_with_index do |uri, uri_index|
     only_if { node["cookbook-qubell-tomcat"]["context"].to_hash.fetch("context_attrs", {}) != {} }
     action :nothing
   end
+end
 
-  bash "Waiting application start" do
-    user "root"
-    code <<-EOH
-      i=0
-      http=000
-      while [ $i -le 77 -a "$http" == "000" ]; do
-        echo "$i"
-        sleep 10
-        ((i++))
-        http=`curl -s -w "%{http_code}" "http://localhost:8080/#{destname}" -o /dev/null`
-      done
+service "tomcat" do
+    service_name "tomcat#{node["tomcat"]["base_version"]}"
+    supports :restart => false, :status => true
+    action :start
+end
 
-      echo "http: $http"
+node['cookbook-qubell-tomcat']['war']['uri'].each_with_index do |uri, uri_index|
+  path = node['cookbook-qubell-tomcat']['war']['path'][uri_index]
 
-      [ "$http" ~= "^[045]" ] && exit 1
-      exit 0
-      EOH
+  remote_file "wait TomcatServer startup" do
+    path "/tmp/dummy-#{uri_index}"
+    source "http://localhost:#{node['tomcat']['port']}#{path}"
+    retries 60
+    retry_delay 10
+    backup false
   end
-end    
+end

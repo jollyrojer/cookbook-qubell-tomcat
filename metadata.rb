@@ -1,5 +1,5 @@
 name "cookbook-qubell-tomcat"
-version "1.0.0"
+version "1.1.0"
 
 depends "apt", "2.2.0"
 depends "java", "1.11.7"
